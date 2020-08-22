@@ -60,6 +60,9 @@
 		<varlist name="AM">
 			<float name="GenMap">4.391</float>
 		</varlist>
+		<varlist name="TX">
+			<float name="GenMap">1.89</float>
+		</varlist>
 	</varlist>
 	<varlist name="WM">
 		<varlist name="FloodAll">

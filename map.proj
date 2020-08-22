@@ -24,6 +24,18 @@
 			<string name="Filename">map_HF.hfz</string>
 			<string name="MapType">HF</string>
 		</varlist>
+		<varlist name="WM">
+			<string name="Filename">map_WM.wmf</string>
+			<string name="MapType">WM</string>
+		</varlist>
+		<varlist name="WS">
+			<string name="Filename">map_WS.hfz</string>
+			<string name="MapType">HF</string>
+		</varlist>
+		<varlist name="AM">
+			<string name="Filename">map_AM.amf.gz</string>
+			<string name="MapType">AM</string>
+		</varlist>
 		<varlist name="TX">
 			<string name="Filename">TX\map_TX.mmf</string>
 			<string name="MapType">RGB</string>
