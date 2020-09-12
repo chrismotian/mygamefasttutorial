@@ -1,6 +1,8 @@
 from direct.showbase.ShowBase import ShowBase # import the bits of panda
 from direct.task import Task
 import sys
+from pandac.PandaModules import CompassEffect
+from panda3d.core import AmbientLight, DirectionalLight, Vec4, Vec3, Fog
 
 class MyApp(ShowBase):
 
@@ -29,6 +31,8 @@ class MyApp(ShowBase):
         self.camLens.setFar(self.maxdistance)
         self.camLens.setFov(60)
 
+        self.createEnviroment()
+
 
     def keyboardSetup(self):
         self.keyMap = {"left":0, "right":0, "climb":0, "fall":0, "accelerate":0, "decelerate":0, "fire":0}
@@ -48,6 +52,33 @@ class MyApp(ShowBase):
         self.accept("space", self.setKey, ["fire",1])
         self.accept("space-up", self.setKey, ["fire",0])
         base.disableMouse() # or updateCamera will fail
+
+    def createEnviroment(self):
+        # Fog to hide performance tweak:
+        colour = (0.0,0.0,0.0)
+        expfog = Fog("scene-wide-fog")
+        expfog.setColor(*colour)
+        expfog.setExpDensity(0.004)
+        render.setFog(expfog)
+        base.setBackgroundColor(*colour)
+
+        # Our sky
+        skydome = loader.loadModel('sky.egg')
+        skydome.setEffect(CompassEffect.make(self.render))    
+        skydome.setScale(self.maxdistance/2) # bit less than "far"
+        skydome.setZ(-30) # sink it
+        # NOT render - you`ll fly through the sky!:
+        skydome.reparentTo(self.camera)
+
+        # Our lighting
+        ambientLight = AmbientLight("ambientLight")
+        ambientLight.setColor(Vec4(.6, .6, .6, 1))
+        directionalLight = DirectionalLight("directionalLight")
+        directionalLight.setDirection(Vec3(0,-10,-10))
+        directionalLight.setColor(Vec4(1,1,1,1))
+        directionalLight.setSpecularColor(Vec4(1,1,1,1))
+        render.setLight(render.attachNewNode(ambientLight))
+        render.setLight(render.attachNewNode(directionalLight))
 
     def setKey(self, key, value):
         self.keyMap[key] = value
