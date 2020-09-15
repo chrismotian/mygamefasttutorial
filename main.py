@@ -1,13 +1,30 @@
 from direct.showbase.ShowBase import ShowBase # import the bits of panda
 from direct.task import Task
 import sys
-from pandac.PandaModules import CompassEffect
+from direct.interval.LerpInterval import LerpTexOffsetInterval, LerpPosInterval
+from panda3d.core import CompassEffect, CollisionTraverser, CollisionNode
+from panda3d.core import CollisionSphere, CollisionHandlerQueue, Material
+from panda3d.core import VBase4, VBase3, TransparencyAttrib
 from panda3d.core import AmbientLight, DirectionalLight, Vec4, Vec3, Fog
+from panda3d.core import BitMask32, Texture, TextNode, TextureStage
+from panda3d.core import NodePath, PandaNode
+from direct.gui.OnscreenText import OnscreenText
 
 class MyApp(ShowBase):
 
     def __init__(self):
         ShowBase.__init__(self)
+
+        # relevant for DEBUG
+        self.debug = True
+        self.debugLabel = self.makeStatusLabel(0)
+        if(self.debug):
+            self.debugLabel.setText("Debug Mode ON")
+        else:
+            self.debugLabel.setText("Debug Mode OFF")
+        self.statusLabel = self.makeStatusLabel(1)
+        self.collisionLabel = self.makeStatusLabel(2)
+
         self.world = self.loader.loadModel("world.bam")
         self.world.reparentTo(self.render)
 
@@ -33,6 +50,38 @@ class MyApp(ShowBase):
 
         self.createEnviroment()
 
+        # relevant for collision and DEBUG
+        self.setupCollisions()
+        self.textCounter = 0
+
+    # relevant for DEBUG
+    def makeStatusLabel(self, i):
+        return OnscreenText(style=2, fg=(.5,1,.5,1), pos=(-1.3,0.92-(.08*i)),\
+                align=TextNode.ALeft, scale = .08, mayChange = 1)
+
+    # relevant for collision and DEBUG
+    def setupCollisions(self):
+        self.collTrav = CollisionTraverser()
+
+
+        self.playerGroundSphere = CollisionSphere(0,1.5,56,1)
+        self.playerGroundCol = CollisionNode('playerSphere')
+        self.playerGroundCol.addSolid(self.playerGroundSphere)
+
+        # bitmask
+        self.playerGroundCol.setFromCollideMask(BitMask32.bit(0))
+        self.playerGroundCol.setIntoCollideMask(BitMask32.allOff())
+        self.world.setCollideMask(BitMask32.bit(0))
+
+        # and done
+        self.playerGroundColNp = self.player.attachNewNode(self.playerGroundCol)
+        self.playerGroundHandler = CollisionHandlerQueue()
+        self.collTrav.addCollider(self.playerGroundColNp, self.playerGroundHandler)
+
+        # DEBUG
+        if (self.debug == True):
+            self.playerGroundColNp.show()
+            self.collTrav.showCollisions(self.render)
 
     def keyboardSetup(self):
         self.keyMap = {"left":0, "right":0, "climb":0, "fall":0, "accelerate":0, "decelerate":0, "fire":0}
@@ -86,6 +135,13 @@ class MyApp(ShowBase):
     def updateTask(self, task):
         self.updatePlayer()
         self.updateCamera()
+        #relevant for collision and DEBUG
+        self.collTrav.traverse(self.render)
+        for i in range(self.playerGroundHandler.getNumEntries()):
+            entry = self.playerGroundHandler.getEntry(i)
+            if (self.debug == True):
+                self.collisionLabel.setText("HIT:"+str(globalClock.getFrameTime()))
+            # we will later deal with 'what to do' when the player hits
         return Task.cont
 
     def updatePlayer(self):
