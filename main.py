@@ -30,18 +30,19 @@ class MyApp(ShowBase):
 
         # relevant for world boundaries
         self.worldsize = 1024
-
-        self.player = self.loader.loadModel("alliedflanker.egg")
-        self.player.setPos(200,200,65)
-        self.player.setH(self.world,225)
-        self.player.reparentTo(self.render)
-
-        # A task to run every frame, some keyboard setup and our speed
-        self.taskMgr.add(self.updateTask,"update")
-        self.keyboardSetup()
-        self.speed = 10.0
+        
         self.maxspeed = 100.0
+        self.startPos = Vec3(200,200,1)
+        self.startHpr = Vec3(225,0,0)
+        self.player = self.loader.loadModel("alliedflanker.egg")
         self.player.setScale(.2,.2,.2)
+        self.player.reparentTo(self.render)
+        self.resetPlayer()
+
+        # A task to run every frame
+        self.taskMgr.add(self.updateTask,"update")
+        
+        self.keyboardSetup()
 
         #performance (to be masked later by fog) and view:
         self.maxdistance = 300
@@ -142,6 +143,7 @@ class MyApp(ShowBase):
             if (self.debug == True):
                 self.collisionLabel.setText("HIT:"+str(globalClock.getFrameTime()))
             # we will later deal with 'what to do' when the player hits
+            self.resetPlayer()
         return Task.cont
 
     def updatePlayer(self):
@@ -229,6 +231,12 @@ class MyApp(ShowBase):
         #see issue content for how we calculated these:
         self.camera.setPos(self.player,25.6226,3.8807,10.2779)
         self.camera.setHpr(self.player,94.8996,-16.6549,1.55508)
+    
+    def resetPlayer(self):
+        self.player.show()
+        self.player.setPos(self.world,self.startPos)
+        self.player.setHpr(self.world,self.startHpr)
+        self.speed = self.maxspeed/2
 
         
 app = MyApp()
