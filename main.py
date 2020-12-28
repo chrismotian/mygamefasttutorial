@@ -55,6 +55,14 @@ class MyApp(ShowBase):
         self.setupCollisions()
         self.textCounter = 0
 
+        # explosion
+        self.explosionModel = loader.loadModel('explosion') 
+        self.explosionModel.reparentTo(self.render) 
+        self.explosionModel.setScale(0.0) 
+        self.explosionModel.setLightOff() 
+        # only one explosion at a time: 
+        self.exploding = False
+
     # relevant for DEBUG
     def makeStatusLabel(self, i):
         return OnscreenText(style=2, fg=(.5,1,.5,1), pos=(-1.3,0.92-(.08*i)),\
@@ -142,77 +150,80 @@ class MyApp(ShowBase):
             entry = self.playerGroundHandler.getEntry(i)
             if (self.debug == True):
                 self.collisionLabel.setText("HIT:"+str(globalClock.getFrameTime()))
-            # we will later deal with 'what to do' when the player hits
-            self.resetPlayer()
+            if (self.exploding == False):
+                self.player.setZ(entry.getSurfacePoint(self.render).getZ()+5)
+                self.explosionSequence()
         return Task.cont
 
     def updatePlayer(self):
-        #Global Clock
-        #by default, panda runs as fast as it can frame to frame
-        scalefactor = (globalClock.getDt()*self.speed)
-        climbfactor = scalefactor * 0.5
-        bankfactor = scalefactor
-        speedfactor = scalefactor *2.9
+        if self.exploding == False:
+            #Global Clock
+            #by default, panda runs as fast as it can frame to frame
+            scalefactor = (globalClock.getDt()*self.speed)
+            climbfactor = scalefactor * 0.5
+            bankfactor = scalefactor
+            speedfactor = scalefactor *2.9
 
-        #Climb and Fall
-        if(self.keyMap["climb"]!=0 and self.speed>0.00):
-        #faster you go, quicker you climb
-            self.player.setZ(self.player.getZ()+climbfactor)
-            self.player.setR(self.player.getR()+climbfactor)
-            #quickest return: (:avoids uncoil/unwind)
-            if(self.player.getR()>= 180):
-                self.player.setR(-180)
-        elif(self.keyMap["fall"]!=0 and self.speed>0.00):
-            self.player.setZ(self.player.getZ()-climbfactor)
-            self.player.setR(self.player.getR()-climbfactor)
-            #quickest return
-            if(self.player.getR() <=-180):
-                self.player.setR(180) #autoreturn - add a bit regardless to make sure it happens 
-        elif(self.player.getR()>0): 
-            self.player.setR(self.player.getR()-(climbfactor+0.1))
-            if(self.player.getR()<0): 
-                self.player.setR(0) #avoid jitter 
-        elif(self.player.getR()<0): 
-            self.player.setR(self.player.getR()+(climbfactor+0.1)) 
-            if(self.player.getR()>0): 
-                self.player.setR(0)
+            #Climb and Fall
+            if(self.keyMap["climb"]!=0 and self.speed>0.00):
+            #faster you go, quicker you climb
+                self.player.setZ(self.player.getZ()+climbfactor)
+                self.player.setR(self.player.getR()+climbfactor)
+                #quickest return: (:avoids uncoil/unwind)
+                if(self.player.getR()>= 180):
+                    self.player.setR(-180)
+            elif(self.keyMap["fall"]!=0 and self.speed>0.00):
+                self.player.setZ(self.player.getZ()-climbfactor)
+                self.player.setR(self.player.getR()-climbfactor)
+                #quickest return
+                if(self.player.getR() <=-180):
+                    self.player.setR(180) #autoreturn - add a bit regardless to make sure it happens 
+            elif(self.player.getR()>0): 
+                self.player.setR(self.player.getR()-(climbfactor+0.1))
+                if(self.player.getR()<0): 
+                    self.player.setR(0) #avoid jitter 
+            elif(self.player.getR()<0): 
+                self.player.setR(self.player.getR()+(climbfactor+0.1)) 
+                if(self.player.getR()>0): 
+                    self.player.setR(0)
 
-        #Left and Right
-        if(self.keyMap["left"]!=0 and self.speed>0.0):
-            self.player.setH(self.player.getH()+bankfactor)
-            self.player.setP(self.player.getP()+bankfactor)
-            #quickest return:
-            if(self.player.getP()>=180):
-                self.player.setP(-180)
-        elif(self.keyMap["right"]!=0 and self.speed>0.0):
-            self.player.setH(self.player.getH()-bankfactor)
-            self.player.setP(self.player.getP()-bankfactor)
-            if(self.player.getP()<=-180): 
-                self.player.setP(180) 
+            #Left and Right
+            if(self.keyMap["left"]!=0 and self.speed>0.0):
+                self.player.setH(self.player.getH()+bankfactor)
+                self.player.setP(self.player.getP()+bankfactor)
+                #quickest return:
+                if(self.player.getP()>=180):
+                    self.player.setP(-180)
+            elif(self.keyMap["right"]!=0 and self.speed>0.0):
+                self.player.setH(self.player.getH()-bankfactor)
+                self.player.setP(self.player.getP()-bankfactor)
+                if(self.player.getP()<=-180): 
+                    self.player.setP(180) 
+                
+            #autoreturn 
+            elif (self.player.getP()>0): 
+                self.player.setP(self.player.getP()-(bankfactor+0.1))
+            if (self.player.getP()<0): 
+                self.player.setP(0) 
+            elif(self.player.getP()<0): 
+                self.player.setP(self.player.getP()+(bankfactor+0.1)) 
+            if(self.player.getP()>0): 
+                self.player.setP(0)
             
-        #autoreturn 
-        elif (self.player.getP()>0): 
-            self.player.setP(self.player.getP()-(bankfactor+0.1))
-        if (self.player.getP()<0): 
-            self.player.setP(0) 
-        elif(self.player.getP()<0): 
-            self.player.setP(self.player.getP()+(bankfactor+0.1)) 
-        if(self.player.getP()>0): 
-            self.player.setP(0)
-        
-        #throttle control
-        if(self.keyMap["accelerate"]!=0): 
-            self.speed += 1
-        if(self.speed>self.maxspeed): 
-            self.speed = self.maxspeed
-        elif(self.keyMap["decelerate"]!=0): 
-            self.speed -=1
-        if(self.speed<0.0): 
-            self.speed =0.0 
+            #throttle control
+            if(self.keyMap["accelerate"]!=0): 
+                self.speed += 1
+            if(self.speed>self.maxspeed): 
+                self.speed = self.maxspeed
+            elif(self.keyMap["decelerate"]!=0): 
+                self.speed -=1
+            if(self.speed<0.0): 
+                self.speed =0.0 
 
-        #move forwards - our X/Y is inverted, see the issue 
-        self.player.setX(self.player,-speedfactor)#respect max camera distance else you cannot see the floor post loop the loop! 
-        self.applyBoundaries()
+            #move forwards - our X/Y is inverted, see the issue 
+            
+            self.player.setX(self.player,-speedfactor)#respect max camera distance else you cannot see the floor post loop the loop! 
+            self.applyBoundaries()
             
     def applyBoundaries(self): 
         if (self.player.getZ() > self.maxdistance): 
@@ -257,6 +268,26 @@ class MyApp(ShowBase):
         self.player.setPos(self.world,self.startPos)
         self.player.setHpr(self.world,self.startHpr)
         self.speed = self.maxspeed/2
+            
+    def explosionSequence(self): 
+        self.exploding = True 
+        self.explosionModel.setPosHpr( Vec3(self.player.getX(),self.player.getY(), self.player.getZ()), Vec3( self.player.getH(),0,0)) 
+        self.player.hide() 
+        taskMgr.add( self.expandExplosion, 'expandExplosion' ) 
+
+    def expandExplosion( self, Task ): 
+        # expand the explosion rign each frame until a certain size 
+        if self.explosionModel.getScale( ) < VBase3( 60.0, 60.0, 60.0 ): 
+            factor = globalClock.getDt() 
+            scale = self.explosionModel.getScale() 
+            scale = scale + VBase3( factor*40, factor*40, factor*40 ) 
+            self.explosionModel.setScale(scale) 
+            return Task.cont 
+        else: 
+            self.explosionModel.setScale(0) 
+            self.exploding = False 
+            self.resetPlayer() 
+            # and it stops the task 
 
         
 app = MyApp()
