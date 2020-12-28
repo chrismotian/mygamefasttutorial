@@ -212,20 +212,40 @@ class MyApp(ShowBase):
 
         #move forwards - our X/Y is inverted, see the issue 
         self.player.setX(self.player,-speedfactor)#respect max camera distance else you cannot see the floor post loop the loop! 
-        if(self.player.getZ()>self.maxdistance):
-            self.player.setZ(self.maxdistance)
-            #should never happen once we add collision, but in case:
-        elif(self.player.getZ()<0):
-            self.player.setZ(0) # and now the X/Y world boundaries; 
-            if(self.player.getX()<0):
-                self.player.setX(0) 
-            elif(self.player.getX()>self.worldsize): 
-                self.player.setX(self.worldsize)
+        self.applyBoundaries()
             
-        if (self.player.getY()<0): 
+    def applyBoundaries(self): 
+        if (self.player.getZ() > self.maxdistance): 
+            self.player.setZ(self.maxdistance) 
+        # should never happen once we add collision, but in case: 
+        elif (self.player.getZ() < 0): 
+            self.player.setZ(0) 
+
+        # and now the X/Y world boundaries: 
+        boundary = False        
+        if (self.player.getX() < 0): 
+            self.player.setX(0) 
+            boundary = True 
+        elif (self.player.getX() > self.worldsize): 
+            self.player.setX(self.worldsize) 
+            boundary = True 
+        if (self.player.getY() < 0): 
             self.player.setY(0) 
-        elif(self.player.getY()> self.worldsize): 
-            self.player.setY(self.worldsize)
+            boundary = True 
+        elif (self.player.getY() > self.worldsize): 
+            self.player.setY(self.worldsize) 
+            boundary = True 
+
+        # lets not be doing this every frame... 
+        if boundary == True and self.textCounter > 30: 
+            self.statusLabel.setText("STATUS: MAP END; TURN AROUND") 
+        elif self.textCounter > 30: 
+            self.statusLabel.setText("STATUS: OK") 
+
+        if self.textCounter > 30: 
+            self.textCounter = 0 
+        else: 
+            self.textCounter = self.textCounter + 1 
 
     def updateCamera(self):
         #see issue content for how we calculated these:
