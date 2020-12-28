@@ -34,7 +34,7 @@ class MyApp(ShowBase):
         self.maxspeed = 100.0
         self.startPos = Vec3(200,200,1)
         self.startHpr = Vec3(225,0,0)
-        self.player = self.loader.loadModel("alliedflanker.egg")
+        self.player = self.loader.loadModel("alliedflanker")
         self.player.setScale(.2,.2,.2)
         self.player.reparentTo(self.render)
         self.resetPlayer()
@@ -113,7 +113,7 @@ class MyApp(ShowBase):
         base.setBackgroundColor(*colour)
 
         # Our sky
-        skydome = loader.loadModel('sky.egg')
+        skydome = loader.loadModel('sky')
         skydome.setEffect(CompassEffect.make(self.render))    
         skydome.setScale(self.maxdistance/2) # bit less than "far"
         skydome.setZ(-30) # sink it
