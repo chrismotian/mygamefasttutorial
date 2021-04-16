@@ -164,6 +164,8 @@ class MyApp(ShowBase):
             climbfactor = scalefactor * 0.5
             bankfactor = scalefactor
             speedfactor = scalefactor *2.9
+            
+            gravityfactor = ((self.maxspeed-self.speed)/100.0)*2.0
 
             #Climb and Fall
             if(self.keyMap["climb"]!=0 and self.speed>0.00):
@@ -225,6 +227,7 @@ class MyApp(ShowBase):
             
             self.player.setX(self.player,-speedfactor)#respect max camera distance else you cannot see the floor post loop the loop! 
             self.applyBoundaries()
+            self.player.setZ(self.player,-gravityfactor)
             
     def applyBoundaries(self): 
         if (self.player.getZ() > self.maxdistance): 
@@ -261,8 +264,9 @@ class MyApp(ShowBase):
 
     def updateCamera(self):
         #see issue content for how we calculated these:
-        self.camera.setPos(self.player,25.6226,3.8807,10.2779)
-        self.camera.setHpr(self.player,94.8996,-16.6549,1.55508)
+        percent = (self.speed/self.maxspeed)
+        self.camera.setPos(self.player,19.6226+(10*percent),3.8807,10.2779)
+        self.camera.setHpr(self.player,94.8996,-12.6549,1.55508)
     
     def resetPlayer(self):
         self.player.show()
