@@ -45,7 +45,7 @@ class MyApp(ShowBase):
         self.keyboardSetup()
 
         #performance (to be masked later by fog) and view:
-        self.maxdistance = 300
+        self.maxdistance = 400
         self.camLens.setFar(self.maxdistance)
         self.camLens.setFov(60)
 
@@ -114,30 +114,32 @@ class MyApp(ShowBase):
 
     def createEnviroment(self):
         # Fog to hide performance tweak:
-        colour = (0.0,0.0,0.0)
+        colour = (0.5,0.5,0.5)
         expfog = Fog("scene-wide-fog")
         expfog.setColor(*colour)
-        expfog.setExpDensity(0.004)
+        expfog.setExpDensity(0.002)
         self.render.setFog(expfog)
         base.setBackgroundColor(*colour)
 
         # Our sky
-        skydome = loader.loadModel('sky')
+        skydome = self.loader.loadModel('blue-sky-sphere')
         skydome.setEffect(CompassEffect.make(self.render))    
-        skydome.setScale(self.maxdistance/2) # bit less than "far"
-        skydome.setZ(-30) # sink it
+        skydome.setScale(0.08) # bit less than "far"
+
         # NOT render - you`ll fly through the sky!:
         skydome.reparentTo(self.camera)
 
         # Our lighting
         ambientLight = AmbientLight("ambientLight")
         ambientLight.setColor(Vec4(.6, .6, .6, 1))
-        directionalLight = DirectionalLight("directionalLight")
-        directionalLight.setDirection(Vec3(0,-10,-10))
-        directionalLight.setColor(Vec4(1,1,1,1))
-        directionalLight.setSpecularColor(Vec4(1,1,1,1))
         render.setLight(render.attachNewNode(ambientLight))
-        render.setLight(render.attachNewNode(directionalLight))
+
+        directionalLight = DirectionalLight("directionalLight")
+        directionalLight.setColor(Vec4(0.8,0.8,0.5,1))
+        dlnp = self.render.attachNewNode(directionalLight)
+        dlnp.setPos(0,0,260)
+        dlnp.lookAt(self.player)
+        self.render.setLight(dlnp)
 
     def setKey(self, key, value):
         self.keyMap[key] = value
