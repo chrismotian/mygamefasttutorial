@@ -62,6 +62,7 @@ class MyApp(ShowBase):
         self.explosionModel.setLightOff() 
         # only one explosion at a time: 
         self.exploding = False
+        
 
     # relevant for DEBUG
     def makeStatusLabel(self, i):
@@ -117,7 +118,7 @@ class MyApp(ShowBase):
         expfog = Fog("scene-wide-fog")
         expfog.setColor(*colour)
         expfog.setExpDensity(0.004)
-        render.setFog(expfog)
+        self.render.setFog(expfog)
         base.setBackgroundColor(*colour)
 
         # Our sky
