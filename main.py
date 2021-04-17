@@ -11,6 +11,7 @@ from panda3d.core import NodePath, PandaNode
 from direct.gui.OnscreenText import OnscreenText
 from direct.gui.DirectGui import DirectFrame, OnscreenImage
 from pandac.PandaModules import TransparencyAttrib
+import random
 
 class MyApp(ShowBase):
 
@@ -40,6 +41,14 @@ class MyApp(ShowBase):
         self.player.setScale(.2,.2,.2)
         self.player.reparentTo(self.render)
         self.resetPlayer()
+        
+        self.startPosPartner = Vec3(200,200,1)
+        self.startHprPartner = Vec3(225,0,0)
+        self.partner = self.loader.loadModel("alliedflanker")
+        self.partner.setScale(.2,.2,.2)
+        self.partner.reparentTo(self.render)
+        self.resetPartner()
+
 
         # A task to run every frame
         self.taskMgr.add(self.updateTask,"update")
@@ -64,7 +73,11 @@ class MyApp(ShowBase):
         self.explosionModel.setLightOff() 
         # only one explosion at a time: 
         self.exploding = False
+<<<<<<< HEAD
         
+=======
+       
+>>>>>>> ec52e0b... add partner plane
 
     # relevant for DEBUG
     def makeStatusLabel(self, i):
@@ -290,6 +303,11 @@ class MyApp(ShowBase):
         self.player.setPos(self.world,self.startPos)
         self.player.setHpr(self.world,self.startHpr)
         self.speed = self.maxspeed/2
+                
+    def resetPartner(self):
+        self.partner.show()
+        self.partner.setPos(self.world,self.startPosPartner)
+        self.partner.setHpr(self.world,self.startHprPartner)
             
     def explosionSequence(self): 
         self.exploding = True 
@@ -310,6 +328,7 @@ class MyApp(ShowBase):
             self.exploding = False 
             self.resetPlayer() 
             # and it stops the task 
+    
 
         
 app = MyApp()
