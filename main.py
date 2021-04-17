@@ -73,11 +73,8 @@ class MyApp(ShowBase):
         self.explosionModel.setLightOff() 
         # only one explosion at a time: 
         self.exploding = False
-<<<<<<< HEAD
         
-=======
-       
->>>>>>> ec52e0b... add partner plane
+        self.radar
 
     # relevant for DEBUG
     def makeStatusLabel(self, i):
@@ -160,14 +157,18 @@ class MyApp(ShowBase):
 
         # image scale of 1 fills screen, position defaults to central
         Scale = 1.0/2.5 # decimal point is VITAL
-        radar = OnscreenImage(image='radar.png', scale=Scale, \
+        self.radar = OnscreenImage(image='radar.png', scale=Scale, \
                                 parent=self.render2d, pos=(-0.95,0,-0.95))
-        radar.setTransparency(TransparencyAttrib.MAlpha)
+        self.radar.setTransparency(TransparencyAttrib.MAlpha)
         # note the image itself and how it is centered
 
         hud = OnscreenImage(image='hud1.png', scale=1, \
                                 parent=self.render2d, pos=(0,0,0))
         hud.setTransparency(TransparencyAttrib.MAlpha)
+        self.dots = list()
+        self.playerobj = OnscreenImage(image='playerdot.png', \
+                                       scale=1.0/20.0,parent=self.radar)
+        self.playerobj.setTransparency(TransparencyAttrib.MAlpha)
 
     def setKey(self, key, value):
         self.keyMap[key] = value
@@ -175,6 +176,7 @@ class MyApp(ShowBase):
     def updateTask(self, task):
         self.updatePlayer()
         self.updateCamera()
+        self.updateGUI(self.worldsize)
         #relevant for collision and DEBUG
         self.collTrav.traverse(self.render)
         for i in range(self.playerGroundHandler.getNumEntries()):
@@ -258,6 +260,43 @@ class MyApp(ShowBase):
             self.player.setX(self.player,-speedfactor)#respect max camera distance else you cannot see the floor post loop the loop! 
             self.applyBoundaries()
             self.player.setZ(self.player,-gravityfactor)
+            
+    def updateGUI(self, boundingBox):
+        boundingBox = boundingBox * 2
+        offsetX = 0.0
+        offsetZ = 0.0
+
+        # would be fine for minimap
+        self.playerobj.setX(self.player.getX()/boundingBox)
+        self.playerobj.setZ(self.player.getY()/boundingBox)
+
+        # player center
+        if (self.playerobj.getX() > 0.5):
+            offsetX = -(self.playerobj.getX()-0.5)
+        elif (self.playerobj.getX() < 0.5):
+            offsetX = 0.5-self.playerobj.getX()
+        # else stays zero
+        if (self.playerobj.getZ() > 0.5):
+            offsetZ = -(self.playerobj.getZ()-0.5)
+        elif (self.playerobj.getZ() < 0.5):
+            offsetZ = 0.5-self.playerobj.getZ()
+
+        self.playerobj.setX(self.playerobj.getX()+offsetX)
+        self.playerobj.setZ(self.playerobj.getZ()+offsetZ)
+           
+        for dot in self.dots:
+            dot.removeNode() # correct way to remove from scene graph
+        del self.dots[:]
+        self.playerobj.setR(-self.player.getH()-90)
+
+        newobj = OnscreenImage(image='reddot.png',scale=1.0/60.0, \
+                                   parent=self.radar)
+        newobj.setTransparency(TransparencyAttrib.MAlpha)
+        newobj.setX(self.partner.getX()/boundingBox)
+        newobj.setZ(self.partner.getY()/boundingBox)
+        newobj.setX(newobj.getX()+offsetX)
+        newobj.setZ(newobj.getZ()+offsetZ)
+        self.dots.append(newobj) # so can destroy, see call above
             
     def applyBoundaries(self): 
         if (self.player.getZ() > self.maxdistance): 
