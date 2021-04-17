@@ -9,6 +9,8 @@ from panda3d.core import AmbientLight, DirectionalLight, Vec4, Vec3, Fog
 from panda3d.core import BitMask32, Texture, TextNode, TextureStage
 from panda3d.core import NodePath, PandaNode
 from direct.gui.OnscreenText import OnscreenText
+from direct.gui.DirectGui import DirectFrame, OnscreenImage
+from pandac.PandaModules import TransparencyAttrib
 
 class MyApp(ShowBase):
 
@@ -140,6 +142,19 @@ class MyApp(ShowBase):
         dlnp.setPos(0,0,260)
         dlnp.lookAt(self.player)
         self.render.setLight(dlnp)
+        
+        self.render2d = render2d
+
+        # image scale of 1 fills screen, position defaults to central
+        Scale = 1.0/2.5 # decimal point is VITAL
+        radar = OnscreenImage(image='radar.png', scale=Scale, \
+                                parent=self.render2d, pos=(-0.95,0,-0.95))
+        radar.setTransparency(TransparencyAttrib.MAlpha)
+        # note the image itself and how it is centered
+
+        hud = OnscreenImage(image='hud1.png', scale=1, \
+                                parent=self.render2d, pos=(0,0,0))
+        hud.setTransparency(TransparencyAttrib.MAlpha)
 
     def setKey(self, key, value):
         self.keyMap[key] = value
